@@ -78,7 +78,7 @@ class PoseWranglerWindow(MayaQWidgetDockableMixin, QtWidgets.QMainWindow):
         self._resource_folder = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'resources')
         icon_folder = self._resource_folder + "/icons"
         QtCore.QDir.setSearchPaths("PoseWrangler", [icon_folder])
-        self.setWindowTitle("Pose Wrangler {version}".format(version=version))
+        self.setWindowTitle("Pose Wrangler [JUN] {version}".format(version=version))
 
         # Embed the UI window inside this window
         self.setCentralWidget(self.win)
