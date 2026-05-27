@@ -15,6 +15,7 @@ from epic_pose_wrangler.v2.model import api
 from epic_pose_wrangler.v2.model.serializers import base_serializer
 from epic_pose_wrangler.v2.model import utils
 
+import pprint
 
 class Serializer(base_serializer.Serializer):
     __version__ = "1.2.0"
@@ -134,6 +135,20 @@ class Serializer(base_serializer.Serializer):
 
             for solver_name, solver_data in rbf_data.items():
 
+                print("solver_data BEFORE  ==================")
+                # pprint.pprint(solver_data)
+                JUN__dts = solver_data['driven_transforms'] 
+                JUN__dts_new = []
+
+                for JUN__d in JUN__dts:
+                    if cmds.objExists(JUN__d):
+                        JUN__dts_new.append(JUN__d)
+                        print("exist bone : " + str(JUN__d))
+                solver_data['driven_transforms']  = JUN__dts_new
+
+                print("solver_data AFTER  ==================")
+                # pprint.pprint(solver_data)
+
                 # Get the current drivers matrices from its current object space position as an MMatrix for ease of use
                 current_drivers = [om.MMatrix(cmds.xform(d, query=True, matrix=True, objectSpace=True)) for d in
                                    solver_data['drivers']]
@@ -169,6 +184,9 @@ class Serializer(base_serializer.Serializer):
                         driven_transforms = copy.deepcopy(pose_data['driven'])
 
                         for name, driven_transform in driven_transforms.items():
+                            if not cmds.objExists(name):
+                                pprint.pprint("not exist  : " + str(name))
+                                continue
                             default_driven = current_driven_transforms[name]
                             driven_transform = om.MMatrix(driven_transform)
                             new_driven[name] = list(driven_transform * default_driven)
