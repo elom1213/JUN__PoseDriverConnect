@@ -132,22 +132,18 @@ class Serializer(base_serializer.Serializer):
         # can be triggered
         if load_delta:
             new_rbf_data = OrderedDict()
+            JUN__is_driven_empty = {}
 
             for solver_name, solver_data in rbf_data.items():
 
-                print("solver_data BEFORE  ==================")
-                # pprint.pprint(solver_data)
+                JUN__is_driven_empty[solver_name] = False
                 JUN__dts = solver_data['driven_transforms'] 
                 JUN__dts_new = []
 
                 for JUN__d in JUN__dts:
                     if cmds.objExists(JUN__d):
                         JUN__dts_new.append(JUN__d)
-                        print("exist bone : " + str(JUN__d))
                 solver_data['driven_transforms']  = JUN__dts_new
-
-                print("solver_data AFTER  ==================")
-                # pprint.pprint(solver_data)
 
                 # Get the current drivers matrices from its current object space position as an MMatrix for ease of use
                 current_drivers = [om.MMatrix(cmds.xform(d, query=True, matrix=True, objectSpace=True)) for d in
@@ -161,7 +157,6 @@ class Serializer(base_serializer.Serializer):
                 # Each pose needs to be updated, but the first pose requires different treatment so the pose index
                 # must be tracked
                 pose_index = 0
-
                 for pose_name, pose_data in poses.items():
                     # If this is the first pose, it is treated as the rest pose and the driver matrices should be set
                     # to their current value from the scene
@@ -185,12 +180,13 @@ class Serializer(base_serializer.Serializer):
 
                         for name, driven_transform in driven_transforms.items():
                             if not cmds.objExists(name):
-                                pprint.pprint("not exist  : " + str(name))
                                 continue
                             default_driven = current_driven_transforms[name]
                             driven_transform = om.MMatrix(driven_transform)
                             new_driven[name] = list(driven_transform * default_driven)
-
+                        
+                        if new_driven == {}:
+                            JUN__is_driven_empty[solver_name] = True
                         pose_data['driven'] = new_driven
 
                     # Update the solver pose data
@@ -204,7 +200,9 @@ class Serializer(base_serializer.Serializer):
                 new_rbf_data[solver_name] = solver_data
 
             rbf_data = new_rbf_data
-
         # Generate the solvers from the solver data
         for solver_name, solver_data in rbf_data.items():
+            if JUN__is_driven_empty[solver_name]:
+                print(f"Ignore Solver : {solver_name}")
+                continue
             api.RBFNode.create_from_data(solver_data)
