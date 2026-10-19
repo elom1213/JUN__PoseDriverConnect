@@ -131,6 +131,22 @@ for solver_name, solver_data in rbf_data.items():
 
 ## 4. 설치 및 실행
 
+### 4-1. 드래그&드롭 설치 (권장, 2026-10-19~) — `.mod` 불필요
+
+`python/__dragDrop_PoseWrangler.py` 를 **Maya 뷰포트로 드래그&드롭**하면 현재 셸프에 `PoseWrangler` 버튼이 생긴다.
+제 다른 Maya 툴(`Maya_Python/JUN_All/tools/*/__dragDrop_<번호>.py`)과 같은 방식이다.
+
+- 셸프 버튼 → `JUN__pose_wrangler_launch.run()`:
+  ① `python/` 을 `sys.path` 에 넣고 ② 솔버 플러그인 `plug-ins/<windows|linux>/<마야 버전>/MayaUERBFPlugin.mll`
+  을 **절대 경로로** `loadPlugin` ③ PoseWrangler 창을 띄운다. 경로는 런처 파일 위치에서 계산하므로
+  **`PoseDriverConnect.mod` 도, 플러그인 경로 등록도 필요 없다.** 폴더(`plug-ins/` + `python/`)만 함께 있으면 어디에 둬도 된다.
+- 드롭할 때 플러그인을 로드하고 **Auto load** 를 켠다 — 솔버 노드(`UERBFSolverNode`)가 든 씬을 툴보다 먼저
+  열어도 노드가 unknown 이 되지 않는다.
+- 이미 `.mod` 로 플러그인이 로드돼 있으면 그대로 쓴다(둘이 같이 있어도 충돌 없음).
+- 같은 파일을 다시 드롭하면 옛 버튼을 지우고 새로 만든다. 아이콘은 `icon/PoseWrangler.png`.
+
+### 4-2. 모듈(.mod) 설치 (Epic 원본 방식)
+
 1. Epic 배포본의 `PoseDriverConnect` 모듈 폴더를 준비합니다 (`plug-ins/`, `PoseDriverConnect.mod` 포함).
 2. 이 저장소를 모듈의 `python/` 폴더로 클론(또는 교체)합니다.
 
@@ -166,7 +182,10 @@ pose_wrangler.api.deserialize_from_file(r"...\JUN__sample\sample_01.json")
 
 ```
 python/
-├─ lunchCmd.py                       ★ 셸프용 실행 스니펫
+├─ __dragDrop_PoseWrangler.py        ★ 뷰포트로 드롭 → 셸프 버튼 설치 (+ 플러그인 Auto load)
+├─ JUN__pose_wrangler_launch.py      ★ 셸프 버튼 진입점 run() — 플러그인을 절대 경로로 로드 후 창
+├─ icon/PoseWrangler.svg / .png      ★ 셸프 아이콘 (32px)
+├─ lunchCmd.py                       ★ 셸프용 실행 스니펫 (.mod 설치 전제, 옛 방식)
 ├─ JUN__sample/
 │  └─ sample_01.json                 ★ 회귀 확인용 MetaHuman 전신 RBF 프리셋 (솔버 44개)
 ├─ LICENSE                             Apache 2.0 (Epic 원본)
@@ -192,7 +211,8 @@ python/
 ```
 
 `★` = 이 포크에서 추가, `★★` = 이 포크에서 수정한 핵심 파일.
-**원본 대비 실제로 손댄 파이썬 파일은 `serializer_v1_2_0.py` 와 `pose_wrangler_window.py` 단 2개**입니다.
+**원본 대비 실제로 손댄 파이썬 파일은 `serializer_v1_2_0.py` 와 `pose_wrangler_window.py` 단 2개**입니다
+(설치용 파일은 새로 더한 것뿐이라 벤더 코드는 그대로다).
 
 > `.gitignore` 로 `docs/`(Sphinx 빌드 산출물)와 `epic_pose_wrangler/**/v1/`(구버전 API)은 추적하지 않습니다.
 > `v1` 은 구형 `UE4RBFSolverNode` 노드가 있는 씬에서 `plugin_manager` 가 폴백하는 경로이므로,
