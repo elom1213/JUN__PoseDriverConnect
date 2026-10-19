@@ -6,6 +6,8 @@
 - **베이스**: Epic Games PoseDriverConnect — PoseWrangler `v2.5.0`, 직렬화 포맷 `1.2.0`
 - **라이선스**: Apache License 2.0 (원본 유지, `LICENSE` 참조)
 - **대상**: Maya 2018 ~ 2025 (Windows / Linux), Maya Python 3 + PySide2/PySide6
+- **설치**: `__dragDrop_PoseWrangler.py` 를 마야 뷰포트로 드래그&드롭 → 셸프 버튼 (`.mod` 불필요, §4-1)
+- **수정 내역**: [`CHANGELOG.md`](CHANGELOG.md) · 최근 갱신 2026-10-19
 
 ---
 
@@ -51,6 +53,10 @@ Epic 의 **PoseWrangler** 는 Maya 에서 **RBF(Radial Basis Function) Pose Driv
 | `7279674` | 2026-05-28 | **Update serializer to ignore non-existent bones** — 존재하지 않는 driven 필터링 + 포즈 델타 루프 방어 |
 | `6ef0f48` | 2026-05-28 | **update window name to [JUN]** — 커스텀 빌드 식별용 창 타이틀 태그 |
 | `49a1e1a` | 2026-05-29 | **Skip solver creation when driven data is empty** — 빈 솔버 스킵, 디버그 print 정리, 실행 스니펫 + 회귀 확인용 샘플 JSON 추가 |
+| `e0be1be` | 2026-08-03 | **Add README documenting the fork and serializer patches** — 이 문서 |
+| `d261446` | 2026-10-19 | **Add drag & drop shelf install - no .mod needed** — 드롭 설치 파일 · 런처 · 셸프 아이콘 (§3-5, §4-1) |
+
+날짜별 상세는 [`CHANGELOG.md`](CHANGELOG.md).
 
 ### 3-1. 존재하지 않는 driven 필터링 (`7279674`)
 
@@ -127,6 +133,19 @@ for solver_name, solver_data in rbf_data.items():
   포즈 5개(`default`, `calf_l_back_50/90/120/150`).
   **일부만 존재하는 스켈레톤에서 회귀 확인**하는 용도입니다.
 
+### 3-5. 드래그&드롭 셸프 설치 (`d261446`)
+
+Epic 원본은 `PoseDriverConnect.mod` 로 플러그인 경로와 `PYTHONPATH` 를 마야에 등록해야 쓸 수 있었습니다.
+제 다른 Maya 툴처럼 **파일 하나를 뷰포트에 드롭하면 셸프 버튼이 생기도록** 설치 파일을 더했습니다(벤더 코드 무수정).
+
+- `__dragDrop_PoseWrangler.py` — 셸프 버튼 설치 + 솔버 플러그인 **Auto load** 켜기.
+- `JUN__pose_wrangler_launch.py` — 버튼 진입점. 자기 위치에서 `../plug-ins/<platform>/<마야 버전>/MayaUERBFPlugin.mll`
+  을 계산해 **절대 경로로 `loadPlugin`** 한 뒤 창을 띄웁니다. 이미 로드돼 있으면 그대로 씁니다.
+- `icon/PoseWrangler.*` — 32px 셸프 아이콘.
+
+검증은 `MAYA_APP_DIR` 을 빈 폴더로 둬 `.mod` 가 없는 mayapy 에서 셸프 명령을 그대로 실행해 했습니다
+(플러그인 로드 · 솔버 노드 사용 가능 · 창 생성).
+
 ---
 
 ## 4. 설치 및 실행
@@ -182,6 +201,7 @@ pose_wrangler.api.deserialize_from_file(r"...\JUN__sample\sample_01.json")
 
 ```
 python/
+├─ CHANGELOG.md                      ★ 수정 내역 (날짜별)
 ├─ __dragDrop_PoseWrangler.py        ★ 뷰포트로 드롭 → 셸프 버튼 설치 (+ 플러그인 Auto load)
 ├─ JUN__pose_wrangler_launch.py      ★ 셸프 버튼 진입점 run() — 플러그인을 절대 경로로 로드 후 창
 ├─ icon/PoseWrangler.svg / .png      ★ 셸프 아이콘 (32px)
